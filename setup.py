@@ -127,19 +127,9 @@ def compile_cuda_module(host_args):
     return 'build', '_cext_gpu'
 
 
-def run_setup(with_binary, test_xgboost, test_lightgbm, test_catboost, test_spark, test_pyod,
-              with_cuda, test_transformers, test_pytorch, test_sentencepiece, test_opencv):
+def run_setup(with_binary, test_xgboost, with_cuda):
     ext_modules = []
-    if with_binary:
-        compile_args = []
-        if sys.platform == 'zos':
-            compile_args.append('-qlonglong')
-        if sys.platform == 'win32':
-            compile_args.append('/MD')
-
-        ext_modules.append(
-            Extension('shap._cext', sources=['shap/cext/_cext.cc'],
-                      extra_compile_args=compile_args))
+    compile_args = []
     if with_cuda:
         try:
             cuda_home, nvcc = get_cuda_path()
@@ -164,22 +154,6 @@ def run_setup(with_binary, test_xgboost, test_lightgbm, test_catboost, test_spar
     tests_require = ['pytest', 'pytest-mpl', 'pytest-cov']
     if test_xgboost:
         tests_require += ['xgboost']
-    if test_lightgbm:
-        tests_require += ['lightgbm']
-    if test_catboost:
-        tests_require += ['catboost']
-    if test_spark:
-        tests_require += ['pyspark']
-    if test_pyod:
-        tests_require += ['pyod']
-    if test_transformers:
-        tests_require += ['transformers']
-    if test_pytorch:
-        tests_require += ['torch']
-    if test_sentencepiece:
-        tests_require += ['sentencepiece']
-    if test_opencv:
-        tests_require += ['opencv-python']
 
     extras_require = {
         'plots': [
@@ -202,9 +176,9 @@ def run_setup(with_binary, test_xgboost, test_lightgbm, test_catboost, test_spar
     extras_require['all'] = list(set(i for val in extras_require.values() for i in val))
 
     setup(
-        name='shap',
+        name='shap_xgboost',
         version=find_version("shap", "__init__.py"),
-        description='A unified approach to explain the output of any machine learning model.',
+        description='Subset of the original Shap package for xgboost only - A unified approach to explain the output of any machine learning model.',
         long_description="SHAP (SHapley Additive exPlanations) is a unified approach to explain "
                          "the output of " + \
                          "any machine learning model. SHAP connects game theory with local "
@@ -256,37 +230,9 @@ def try_run_setup(**kwargs):
             kwargs["test_xgboost"] = False
             print("Couldn't install XGBoost for testing!")
             try_run_setup(**kwargs)
-        elif "lightgbm" in str(e).lower():
-            kwargs["test_lightgbm"] = False
-            print("Couldn't install LightGBM for testing!")
-            try_run_setup(**kwargs)
-        elif "catboost" in str(e).lower():
-            kwargs["test_catboost"] = False
-            print("Couldn't install CatBoost for testing!")
-            try_run_setup(**kwargs)
         elif "cuda" in str(e).lower():
             kwargs["with_cuda"] = False
             print("WARNING: Could not compile cuda extensions")
-            try_run_setup(**kwargs)
-        elif kwargs["with_binary"]:
-            kwargs["with_binary"] = False
-            print("WARNING: The C extension could not be compiled, sklearn tree models not supported.")
-            try_run_setup(**kwargs)
-        elif "pyod" in str(e).lower():
-            kwargs["test_pyod"] = False
-            print("Couldn't install PyOD for testing!")
-            try_run_setup(**kwargs)
-        elif "transformers" in str(e).lower():
-            kwargs["test_transformers"] = False
-            print("Couldn't install Transformers for testing!")
-            try_run_setup(**kwargs)
-        elif "torch" in str(e).lower():
-            kwargs["test_pytorch"] = False
-            print("Couldn't install PyTorch for testing!")
-            try_run_setup(**kwargs)
-        elif "sentencepiece" in str(e).lower():
-            kwargs["test_sentencepiece"] = False
-            print("Couldn't install sentencepiece for testing!")
             try_run_setup(**kwargs)
         else:
             print("ERROR: Failed to build!")
@@ -294,8 +240,4 @@ def try_run_setup(**kwargs):
 
 # we seem to need this import guard for appveyor
 if __name__ == "__main__":
-    try_run_setup(
-        with_binary=True, test_xgboost=True, test_lightgbm=True, test_catboost=True,
-        test_spark=True, test_pyod=True, with_cuda=True, test_transformers=True, test_pytorch=True,
-        test_sentencepiece=True, test_opencv=True
-    )
+    try_run_setup(test_xgboost=True, with_cuda=True)

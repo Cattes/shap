@@ -62,6 +62,7 @@ def test_additivity(explainer_type, model, masker, data, **kwargs):
     else:
         assert np.max(np.abs(shap_values.base_values + shap_values.values.sum(1) - model(data)) < 1e6)
 
+
 def test_interactions_additivity(explainer_type, model, masker, data, **kwargs):
     """ Test explainer and masker for additivity on a single output prediction problem.
     """
@@ -70,25 +71,6 @@ def test_interactions_additivity(explainer_type, model, masker, data, **kwargs):
 
     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum((1, 2)) - model(data)) < 1e6)
 
-# def test_multi_class(explainer_type, model, masker, data, **kwargs):
-#     """ Test explainer and masker for additivity on a multi-class prediction problem.
-#     """
-#     explainer_kwargs = {k: kwargs[k] for k in kwargs if k in ["algorithm"]}
-#     explainer = explainer_type(model.predict_proba, masker, **explainer_kwargs)
-#     shap_values = explainer(data)
-
-#     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum(1) - model.predict_proba(data)) < 1e6)
-
-# def test_interactions(explainer_type):
-#     """ Check that second order interactions have additivity.
-#     """
-#     model, X = basic_xgboost(100)
-
-#     # build an Exact explainer and explain the model predictions on the given dataset
-#     explainer = explainer_type(model.predict, X)
-#     shap_values = explainer(X, interactions=True)
-
-#     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum((1, 2)) - model.predict(X[:100])) < 1e6)
 
 def test_serialization(explainer_type, model, masker, data, rtol=1e-05, atol=1e-8, **kwargs):
     """ Test serialization with a given explainer algorithm.
