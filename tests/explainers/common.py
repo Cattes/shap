@@ -22,23 +22,6 @@ def basic_xgboost_scenario(max_samples=None, dataset=shap.datasets.adult):
 
     return model, X
 
-def basic_translation_scenario():
-    """ Create a basic transformers translation model and tokenizer.
-    """
-    AutoTokenizer = pytest.importorskip("transformers").AutoTokenizer
-    AutoModelForSeq2SeqLM = pytest.importorskip("transformers").AutoModelForSeq2SeqLM
-
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-es")
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-es")
-
-    # define the input sentences we want to translate
-    data = [
-        "In this picture, there are four persons: my father, my mother, my brother and my sister.",
-        "Transformers have rapidly become the model of choice for NLP problems, replacing older recurrent neural network models"
-    ]
-
-    return model, tokenizer, data
-
 def test_additivity(explainer_type, model, masker, data, **kwargs):
     """ Test explainer and masker for additivity on a single output prediction problem.
     """
@@ -62,6 +45,7 @@ def test_additivity(explainer_type, model, masker, data, **kwargs):
     else:
         assert np.max(np.abs(shap_values.base_values + shap_values.values.sum(1) - model(data)) < 1e6)
 
+
 def test_interactions_additivity(explainer_type, model, masker, data, **kwargs):
     """ Test explainer and masker for additivity on a single output prediction problem.
     """
@@ -70,25 +54,6 @@ def test_interactions_additivity(explainer_type, model, masker, data, **kwargs):
 
     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum((1, 2)) - model(data)) < 1e6)
 
-# def test_multi_class(explainer_type, model, masker, data, **kwargs):
-#     """ Test explainer and masker for additivity on a multi-class prediction problem.
-#     """
-#     explainer_kwargs = {k: kwargs[k] for k in kwargs if k in ["algorithm"]}
-#     explainer = explainer_type(model.predict_proba, masker, **explainer_kwargs)
-#     shap_values = explainer(data)
-
-#     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum(1) - model.predict_proba(data)) < 1e6)
-
-# def test_interactions(explainer_type):
-#     """ Check that second order interactions have additivity.
-#     """
-#     model, X = basic_xgboost(100)
-
-#     # build an Exact explainer and explain the model predictions on the given dataset
-#     explainer = explainer_type(model.predict, X)
-#     shap_values = explainer(X, interactions=True)
-
-#     assert np.max(np.abs(shap_values.base_values + shap_values.values.sum((1, 2)) - model.predict(X[:100])) < 1e6)
 
 def test_serialization(explainer_type, model, masker, data, rtol=1e-05, atol=1e-8, **kwargs):
     """ Test serialization with a given explainer algorithm.
