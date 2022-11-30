@@ -4,14 +4,5 @@
 # For running tests
 # nose
 
-# For neural network examples
-# keras
-# tensorflow
-# torch
-# torchvision
-# transformers
-
 # For decision tree examples
 # xgboost
-# catboost
-# lightgbm
